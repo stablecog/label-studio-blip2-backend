@@ -8,7 +8,7 @@ from label_studio_ml.utils import DATA_UNDEFINED_NAME
 import os
 from download_model import MODEL_NAME, MODEL_CACHE_DIR
 
-device = "cuda"
+device = "cpu"
 access_token = os.environ.get("LS_ACCESS_TOKEN")
 
 processor_pre = AutoProcessor.from_pretrained(MODEL_NAME, cache_dir=MODEL_CACHE_DIR)
