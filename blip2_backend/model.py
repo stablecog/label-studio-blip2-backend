@@ -4,37 +4,29 @@ from transformers import AutoProcessor, Blip2ForConditionalGeneration
 from PIL import Image
 import requests
 from io import BytesIO
-from label_studio_ml.utils import (
-    DATA_UNDEFINED_NAME,
-)
+from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_image_local_path
+import os
 
 device = "cpu"
-
-
-def download_image(url):
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to download image from {url}")
-    return Image.open(BytesIO(response.content)).convert("RGB")
+access_token = os.environ.get("LS_ACCESS_TOKEN")
 
 
 class NewModel(LabelStudioMLBase):
-    def __init__(self, project_id, **kwargs):
+    def __init__(self, project_id, model="Salesforce/blip2-opt-2.7b", **kwargs):
         super(NewModel, self).__init__(**kwargs)
         self.blip_2_processor = None
         self.blip_2_model = None
         self.value = "captioning"
-        """ self.blip2_processor = AutoProcessor.from_pretrained(
-            "Salesforce/blip2-opt-2.7b"
-        )
-        self.blip2_model = Blip2ForConditionalGeneration.from_pretrained(
-            "Salesforce/blip2-opt-2.7b"
-        ).to(device) """
+        self.hostname = "https://labelstudio.stablecog.com"
+        self.access_token = access_token
+        self.processor = AutoProcessor.from_pretrained(model)
+        self.model = Blip2ForConditionalGeneration.from_pretrained(model)
 
     def _get_image_url(self, task):
-        image_url = task["data"].get(self.value) or task["data"].get(
+        image_url_relative = task["data"].get(self.value) or task["data"].get(
             DATA_UNDEFINED_NAME
         )
+        image_url = self.hostname + image_url_relative
         """ if image_url.startswith("s3://"):
             # presign s3 url
             r = urlparse(image_url, allow_fragments=False)
@@ -52,6 +44,14 @@ class NewModel(LabelStudioMLBase):
                 ) """
         return image_url
 
+    def _download_task_image(self, task):
+        image_url = self._get_image_url(task)
+        headers = {"Authorization": f"Token {self.access_token}"}
+        response = requests.get(image_url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Failed to download image from {image_url}")
+        return Image.open(BytesIO(response.content)).convert("RGB")
+
     def predict(
         self, tasks: List[Dict], context: Optional[Dict] = None, **kwargs
     ) -> List[Dict]:
@@ -59,16 +59,13 @@ class NewModel(LabelStudioMLBase):
         from_name, schema = list(self.parsed_label_config.items())[0]
         to_name = schema["to_name"][0]
         for task in tasks:
-            image_url_relative = self._get_image_url(task)
-            image_url = self.get_local_path(image_url_relative)
-            image = download_image(image_url)
-            """ inputs = self.blip2_processor(image, return_tensors="pt").to(device)
-            generated_ids = self.blip2_model.generate(**inputs, max_new_tokens=20)
-            generated_text = self.blip2_processor.batch_decode(
+            image = self._download_task_image(task)
+            inputs = self.processor(image, return_tensors="pt").to(device)
+            generated_ids = self.model.generate(**inputs, max_new_tokens=20)
+            generated_text = self.processor.batch_decode(
                 generated_ids, skip_special_tokens=True
-            )[0].strip() """
-            generated_text = "This is a test"
-            prediction = [
+            )[0].strip()
+            result = [
                 {
                     "type": "textarea",
                     "value": {"text": [generated_text]},
@@ -76,7 +73,11 @@ class NewModel(LabelStudioMLBase):
                     "from_name": from_name,
                 }
             ]
-            predictions.append(prediction)
+            predictions.append(
+                {
+                    "result": result,
+                }
+            )
 
         """Write your inference logic here
         :param tasks: [Label Studio tasks in JSON format](https://labelstud.io/guide/task_format.html)
