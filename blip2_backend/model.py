@@ -16,7 +16,7 @@ processor_pre = None
 model_pre = None
 model_settings = {
     "num_beams": 3,
-    "use_nucleus_sampling": True,
+    "early_stopping": True,
     "repetition_penalty": 0.9,
     "min_length": 10,
     "max_length": 75,
