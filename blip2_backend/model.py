@@ -8,8 +8,13 @@ from label_studio_ml.utils import DATA_UNDEFINED_NAME
 import os
 from download_model import MODEL_NAME, MODEL_CACHE_DIR
 import time
+from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
+from datetime import datetime, timedelta
+import urllib.parse
 
-access_token = os.environ.get("LS_ACCESS_TOKEN")
+
+label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
+azure_connection_string = os.environ.get("AZURE_CONNECTION_STRING")
 
 device = "cpu"
 processor_pre = None
@@ -43,13 +48,43 @@ def load_model():
 load_model()
 
 
+def generate_presigned_url(azure_url, connection_string, expiry_time=1):
+    # Parse the URL to extract the container and blob name
+    if azure_url.startswith("azure-blob://"):
+        parts = azure_url.replace("azure-blob://", "").split("/", 1)
+        if len(parts) < 2:
+            raise ValueError("Invalid Azure Blob URL")
+        container_name, blob_name = parts
+    else:
+        raise ValueError("URL must start with azure-blob://")
+
+    # Initialize BlobServiceClient
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    blob_client = blob_service_client.get_blob_client(container_name, blob_name)
+
+    # Generate a SAS token using blob client properties
+    sas_token = generate_blob_sas(
+        account_name=blob_client.account_name,
+        container_name=container_name,
+        blob_name=blob_name,
+        account_key=blob_service_client.credential.account_key,
+        permission=BlobSasPermissions(read=True),
+        expiry=datetime.utcnow() + timedelta(hours=expiry_time),
+    )
+
+    # Generate the presigned URL
+    presigned_url = f"https://{blob_client.account_name}.blob.core.windows.net/{container_name}/{urllib.parse.quote(blob_name)}?{sas_token}"
+
+    return presigned_url
+
+
 class BLIP2Model(LabelStudioMLBase):
     def __init__(self, project_id, model=MODEL_NAME, **kwargs):
         super(BLIP2Model, self).__init__(**kwargs)
         self.value = "captioning"
         self.hostname = "https://labelstudio.stablecog.com"
         self.model_name = model
-        self.access_token = access_token
+        self.access_token = label_studio_access_token
         self.processor = processor_pre
         self.model = model_pre
 
@@ -57,32 +92,22 @@ class BLIP2Model(LabelStudioMLBase):
         image_url = task["data"].get(self.value) or task["data"].get(
             DATA_UNDEFINED_NAME
         )
-        print("---------------------------------")
-        print(image_url)
-        print("---------------------------------")
+        headers = None
         if image_url.startswith("/"):
             image_url = self.hostname + image_url
-        """ if image_url.startswith("s3://"):
-            # presign s3 url
-            r = urlparse(image_url, allow_fragments=False)
-            bucket_name = r.netloc
-            key = r.path.lstrip("/")
-            client = boto3.client("s3", endpoint_url=self.endpoint_url)
-            try:
-                image_url = client.generate_presigned_url(
-                    ClientMethod="get_object",
-                    Params={"Bucket": bucket_name, "Key": key},
-                )
-            except ClientError as exc:
-                logger.warning(
-                    f"Can't generate presigned URL for {image_url}. Reason: {exc}"
-                ) """
-        return image_url
+            headers = {"Authorization": f"Token {self.access_token}"}
+        if image_url.startswith("azure-blob://"):
+            image_url = generate_presigned_url(
+                image_url,
+            )
+        return image_url, headers
 
     def _download_task_image(self, task):
-        image_url = self._get_image_url(task)
-        headers = {"Authorization": f"Token {self.access_token}"}
-        response = requests.get(image_url, headers=headers)
+        image_url, headers = self._get_image_url(task)
+        req = {"url": image_url}
+        if headers:
+            req["headers"] = headers
+        response = requests.get(**req)
         if response.status_code != 200:
             raise Exception(f"Failed to download image from {image_url}")
         return Image.open(BytesIO(response.content)).convert("RGB")
