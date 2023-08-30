@@ -11,8 +11,10 @@ device = "cpu"
 class NewModel(LabelStudioMLBase):
     def __init__(self, project_id, **kwargs):
         super(NewModel, self).__init__(**kwargs)
-        self.processor = AutoProcessor.from_pretrained("Salesforce/blip2-opt-2.7b")
-        self.model = Blip2ForConditionalGeneration.from_pretrained(
+        self.blip2_processor = AutoProcessor.from_pretrained(
+            "Salesforce/blip2-opt-2.7b"
+        )
+        self.blip2_model = Blip2ForConditionalGeneration.from_pretrained(
             "Salesforce/blip2-opt-2.7b"
         ).to(device)
 
@@ -25,9 +27,9 @@ class NewModel(LabelStudioMLBase):
         for task in tasks:
             image_url = task["data"]["image"]
             image = Image.open(requests.get(image_url, stream=True).raw)
-            inputs = self.processor(image, return_tensors="pt").to(device)
-            generated_ids = self.model.generate(**inputs, max_new_tokens=20)
-            generated_text = self.processor.batch_decode(
+            inputs = self.blip2_processor(image, return_tensors="pt").to(device)
+            generated_ids = self.blip2_model.generate(**inputs, max_new_tokens=20)
+            generated_text = self.blip2_processor.batch_decode(
                 generated_ids, skip_special_tokens=True
             )[0].strip()
             prediction = [
