@@ -48,7 +48,7 @@ def load_model():
 load_model()
 
 
-def generate_presigned_url(azure_url, connection_string, expiry_time=1):
+def generate_presigned_url(azure_url, expiry_time=1):
     # Parse the URL to extract the container and blob name
     if azure_url.startswith("azure-blob://"):
         parts = azure_url.replace("azure-blob://", "").split("/", 1)
@@ -59,7 +59,9 @@ def generate_presigned_url(azure_url, connection_string, expiry_time=1):
         raise ValueError("URL must start with azure-blob://")
 
     # Initialize BlobServiceClient
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    blob_service_client = BlobServiceClient.from_connection_string(
+        azure_connection_string
+    )
     blob_client = blob_service_client.get_blob_client(container_name, blob_name)
 
     # Generate a SAS token using blob client properties
