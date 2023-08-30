@@ -18,9 +18,10 @@ model_settings = {
     "num_beams": 3,
     "early_stopping": True,
     "repetition_penalty": 0.9,
-    "min_length": 10,
+    "min_length": 50,
     "max_length": 75,
     "top_p": 10,
+    "do_sample": True,
 }
 
 
