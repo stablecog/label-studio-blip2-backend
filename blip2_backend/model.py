@@ -1,5 +1,4 @@
 from typing import List, Dict, Optional
-from blip2_backend.download_model import MODEL_CACHE_DIR, MODEL_NAME
 from label_studio_ml.model import LabelStudioMLBase
 from transformers import AutoProcessor, Blip2ForConditionalGeneration
 from PIL import Image
@@ -10,6 +9,8 @@ import os
 
 device = "cpu"
 access_token = os.environ.get("LS_ACCESS_TOKEN")
+MODEL_NAME = "Salesforce/blip2-opt-2.7b"
+MODEL_CACHE_DIR = "huggingface_cache"
 
 
 class NewModel(LabelStudioMLBase):
