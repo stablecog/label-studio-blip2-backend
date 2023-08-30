@@ -21,7 +21,7 @@ class BLIP2Model(LabelStudioMLBase):
         self.access_token = access_token
         self.processor = AutoProcessor.from_pretrained(
             self.model_name, cache_dir=MODEL_CACHE_DIR
-        ).to(device)
+        )
         self.model = Blip2ForConditionalGeneration.from_pretrained(
             self.model_name, cache_dir=MODEL_CACHE_DIR
         ).to(device)
