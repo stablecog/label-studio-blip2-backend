@@ -54,10 +54,14 @@ class BLIP2Model(LabelStudioMLBase):
         self.model = model_pre
 
     def _get_image_url(self, task):
-        image_url_relative = task["data"].get(self.value) or task["data"].get(
+        image_url = task["data"].get(self.value) or task["data"].get(
             DATA_UNDEFINED_NAME
         )
-        image_url = self.hostname + image_url_relative
+        print("---------------------------------")
+        print(image_url)
+        print("---------------------------------")
+        if image_url.startswith("/"):
+            image_url = self.hostname + image_url
         """ if image_url.startswith("s3://"):
             # presign s3 url
             r = urlparse(image_url, allow_fragments=False)
