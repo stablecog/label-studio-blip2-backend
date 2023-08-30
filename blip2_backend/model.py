@@ -20,7 +20,7 @@ model_settings = {
     "repetition_penalty": 1.5,
     "min_length": 20,
     "max_length": 75,
-    "top_p": "0.92",
+    "top_p": 0.92,
     "do_sample": True,
 }
 
