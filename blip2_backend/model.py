@@ -6,16 +6,15 @@ import requests
 from io import BytesIO
 from label_studio_ml.utils import DATA_UNDEFINED_NAME
 import os
+from download_model import MODEL_NAME, MODEL_CACHE_DIR
 
-device = "cpu"
+device = "cuda"
 access_token = os.environ.get("LS_ACCESS_TOKEN")
-MODEL_NAME = "Salesforce/blip2-opt-2.7b"
-MODEL_CACHE_DIR = "huggingface_cache"
 
 
-class NewModel(LabelStudioMLBase):
+class BLIP2Model(LabelStudioMLBase):
     def __init__(self, project_id, model=MODEL_NAME, **kwargs):
-        super(NewModel, self).__init__(**kwargs)
+        super(BLIP2Model, self).__init__(**kwargs)
         self.value = "captioning"
         self.hostname = "https://labelstudio.stablecog.com"
         self.model_name = model
