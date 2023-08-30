@@ -4,9 +4,11 @@ from transformers import AutoProcessor, Blip2ForConditionalGeneration
 from PIL import Image
 import requests
 from io import BytesIO
+from label_studio_ml.utils import (
+    DATA_UNDEFINED_NAME,
+)
 
 device = "cpu"
-base_url = "https://labelstudio.stablecog.com"
 
 
 def download_image(url):
@@ -21,12 +23,34 @@ class NewModel(LabelStudioMLBase):
         super(NewModel, self).__init__(**kwargs)
         self.blip_2_processor = None
         self.blip_2_model = None
+        self.value = "captioning"
         """ self.blip2_processor = AutoProcessor.from_pretrained(
             "Salesforce/blip2-opt-2.7b"
         )
         self.blip2_model = Blip2ForConditionalGeneration.from_pretrained(
             "Salesforce/blip2-opt-2.7b"
         ).to(device) """
+
+    def _get_image_url(self, task):
+        image_url = task["data"].get(self.value) or task["data"].get(
+            DATA_UNDEFINED_NAME
+        )
+        """ if image_url.startswith("s3://"):
+            # presign s3 url
+            r = urlparse(image_url, allow_fragments=False)
+            bucket_name = r.netloc
+            key = r.path.lstrip("/")
+            client = boto3.client("s3", endpoint_url=self.endpoint_url)
+            try:
+                image_url = client.generate_presigned_url(
+                    ClientMethod="get_object",
+                    Params={"Bucket": bucket_name, "Key": key},
+                )
+            except ClientError as exc:
+                logger.warning(
+                    f"Can't generate presigned URL for {image_url}. Reason: {exc}"
+                ) """
+        return image_url
 
     def predict(
         self, tasks: List[Dict], context: Optional[Dict] = None, **kwargs
@@ -35,10 +59,8 @@ class NewModel(LabelStudioMLBase):
         from_name, schema = list(self.parsed_label_config.items())[0]
         to_name = schema["to_name"][0]
         for task in tasks:
-            image_url = task["data"]["captioning"]
-            print(image_url)
-            if image_url.startswith("/"):
-                image_url = base_url + image_url
+            image_url_relative = self._get_image_url(task)
+            image_url = self.get_local_path(image_url_relative)
             image = download_image(image_url)
             """ inputs = self.blip2_processor(image, return_tensors="pt").to(device)
             generated_ids = self.blip2_model.generate(**inputs, max_new_tokens=20)
