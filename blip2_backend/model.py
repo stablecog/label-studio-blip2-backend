@@ -17,10 +17,10 @@ model_pre = None
 model_settings = {
     "num_beams": 3,
     "early_stopping": True,
-    "repetition_penalty": 0.9,
-    "min_length": 50,
+    "repetition_penalty": 1.5,
+    "min_length": 20,
     "max_length": 75,
-    "top_p": 10,
+    "top_p": "0.92",
     "do_sample": True,
 }
 
