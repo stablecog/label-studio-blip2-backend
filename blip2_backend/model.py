@@ -7,14 +7,31 @@ from io import BytesIO
 from label_studio_ml.utils import DATA_UNDEFINED_NAME
 import os
 from download_model import MODEL_NAME, MODEL_CACHE_DIR
+import time
 
-device = "cpu"
 access_token = os.environ.get("LS_ACCESS_TOKEN")
 
-processor_pre = AutoProcessor.from_pretrained(MODEL_NAME, cache_dir=MODEL_CACHE_DIR)
-model_pre = Blip2ForConditionalGeneration.from_pretrained(
-    MODEL_NAME, cache_dir=MODEL_CACHE_DIR
-).to(device)
+device = "cpu"
+processor_pre = None
+model_pre = None
+
+
+def load_model():
+    global processor_pre, model_pre
+    s = time.time()
+    print(f"Loading model: {MODEL_NAME}")
+    processor_pre = AutoProcessor.from_pretrained(MODEL_NAME, cache_dir=MODEL_CACHE_DIR)
+    model_pre = Blip2ForConditionalGeneration.from_pretrained(
+        MODEL_NAME, cache_dir=MODEL_CACHE_DIR
+    )
+    print(f"Loaded model in: {round(time.time() - s, 2)} seconds")
+    s = time.time()
+    print(f"Moving model to: {device}")
+    model_pre.to(device)
+    print(f"Moved model in: {round(time.time() - s, 2)} seconds")
+
+
+load_model()
 
 
 class BLIP2Model(LabelStudioMLBase):
