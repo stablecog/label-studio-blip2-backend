@@ -15,13 +15,14 @@ device = "cpu"
 processor_pre = None
 model_pre = None
 model_settings = {
-    "num_beams": 3,
-    "early_stopping": True,
-    "repetition_penalty": 1.5,
-    "min_length": 20,
-    "max_length": 75,
+    "max_length": 15,
+    "min_length": 0,
+    "top_k": 30,
     "top_p": 0.92,
-    "do_sample": True,
+    "do_sample": False,
+    "num_beams": 4,
+    "repetition_penalty": 1.5,
+    "max_repititions": 2,
 }
 
 
