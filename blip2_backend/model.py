@@ -22,7 +22,6 @@ model_settings = {
     "do_sample": False,
     "num_beams": 4,
     "repetition_penalty": 1.5,
-    "max_repititions": 2,
 }
 
 
