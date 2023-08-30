@@ -27,6 +27,7 @@ class NewModel(LabelStudioMLBase):
         from_name, schema = list(self.parsed_label_config.items())[0]
         to_name = schema["to_name"][0]
         for task in tasks:
+            print(task)
             image_url = task["data"]["image"]
             image = Image.open(requests.get(image_url, stream=True).raw)
             """ inputs = self.blip2_processor(image, return_tensors="pt").to(device)
