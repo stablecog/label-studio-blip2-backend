@@ -3,10 +3,17 @@ from label_studio_ml.model import LabelStudioMLBase
 from transformers import AutoProcessor, Blip2ForConditionalGeneration
 from PIL import Image
 import requests
-
+from io import BytesIO
 
 device = "cpu"
 base_url = "https://labelstudio.stablecog.com"
+
+
+def download_image(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to download image from {url}")
+    return Image.open(BytesIO(response.content)).convert("RGB")
 
 
 class NewModel(LabelStudioMLBase):
@@ -28,11 +35,11 @@ class NewModel(LabelStudioMLBase):
         from_name, schema = list(self.parsed_label_config.items())[0]
         to_name = schema["to_name"][0]
         for task in tasks:
-            print(task)
             image_url = task["data"]["captioning"]
+            print(image_url)
             if image_url.startswith("/"):
                 image_url = base_url + image_url
-            image = Image.open(requests.get(image_url, stream=True).raw)
+            image = download_image(image_url)
             """ inputs = self.blip2_processor(image, return_tensors="pt").to(device)
             generated_ids = self.blip2_model.generate(**inputs, max_new_tokens=20)
             generated_text = self.blip2_processor.batch_decode(
