@@ -14,6 +14,14 @@ access_token = os.environ.get("LS_ACCESS_TOKEN")
 device = "cpu"
 processor_pre = None
 model_pre = None
+model_settings = {
+    "num_beams": 3,
+    "use_nucleus_sampling": True,
+    "repetition_penalty": 0.9,
+    "min_length": 10,
+    "max_length": 75,
+    "top_p": 10,
+}
 
 
 def load_model():
@@ -85,7 +93,7 @@ class BLIP2Model(LabelStudioMLBase):
             inputs = self.processor(image, return_tensors="pt").to(device)
             generated_ids = self.model.generate(**inputs, max_new_tokens=75)
             generated_text = self.processor.batch_decode(
-                generated_ids, skip_special_tokens=True
+                generated_ids, **model_settings
             )[0].strip()
             result = [
                 {
