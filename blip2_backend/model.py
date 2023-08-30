@@ -14,14 +14,12 @@ access_token = os.environ.get("LS_ACCESS_TOKEN")
 class NewModel(LabelStudioMLBase):
     def __init__(self, project_id, model="Salesforce/blip2-opt-2.7b", **kwargs):
         super(NewModel, self).__init__(**kwargs)
-        self.blip_2_processor = None
-        self.blip_2_model = None
         self.value = "captioning"
         self.hostname = "https://labelstudio.stablecog.com"
         self.model_name = model
         self.access_token = access_token
-        self.processor = AutoProcessor.from_pretrained(self.model_name)
-        self.model = Blip2ForConditionalGeneration.from_pretrained(self.model_name)
+        """ self.processor = AutoProcessor.from_pretrained(self.model_name)
+        self.model = Blip2ForConditionalGeneration.from_pretrained(self.model_name) """
 
     def _get_image_url(self, task):
         image_url_relative = task["data"].get(self.value) or task["data"].get(
@@ -61,11 +59,12 @@ class NewModel(LabelStudioMLBase):
         to_name = schema["to_name"][0]
         for task in tasks:
             image = self._download_task_image(task)
-            inputs = self.processor(image, return_tensors="pt").to(device)
+            """ inputs = self.processor(image, return_tensors="pt").to(device)
             generated_ids = self.model.generate(**inputs, max_new_tokens=75)
             generated_text = self.processor.batch_decode(
                 generated_ids, skip_special_tokens=True
-            )[0].strip()
+            )[0].strip() """
+            generated_text = "This is a test caption 2"
             result = [
                 {
                     "type": "textarea",
