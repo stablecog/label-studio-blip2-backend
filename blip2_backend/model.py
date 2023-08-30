@@ -11,6 +11,11 @@ from download_model import MODEL_NAME, MODEL_CACHE_DIR
 device = "cuda"
 access_token = os.environ.get("LS_ACCESS_TOKEN")
 
+processor = AutoProcessor.from_pretrained(MODEL_NAME, cache_dir=MODEL_CACHE_DIR)
+model = Blip2ForConditionalGeneration.from_pretrained(
+    MODEL_NAME, cache_dir=MODEL_CACHE_DIR
+).to(device)
+
 
 class BLIP2Model(LabelStudioMLBase):
     def __init__(self, project_id, model=MODEL_NAME, **kwargs):
@@ -19,12 +24,8 @@ class BLIP2Model(LabelStudioMLBase):
         self.hostname = "https://labelstudio.stablecog.com"
         self.model_name = model
         self.access_token = access_token
-        self.processor = AutoProcessor.from_pretrained(
-            self.model_name, cache_dir=MODEL_CACHE_DIR
-        )
-        self.model = Blip2ForConditionalGeneration.from_pretrained(
-            self.model_name, cache_dir=MODEL_CACHE_DIR
-        ).to(device)
+        self.processor = processor
+        self.model = model
 
     def _get_image_url(self, task):
         image_url_relative = task["data"].get(self.value) or task["data"].get(
