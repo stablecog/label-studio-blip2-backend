@@ -1,10 +1,11 @@
 from typing import List, Dict, Optional
+from blip2_backend.download_model import MODEL_CACHE_DIR, MODEL_NAME
 from label_studio_ml.model import LabelStudioMLBase
 from transformers import AutoProcessor, Blip2ForConditionalGeneration
 from PIL import Image
 import requests
 from io import BytesIO
-from label_studio_ml.utils import DATA_UNDEFINED_NAME, get_image_local_path
+from label_studio_ml.utils import DATA_UNDEFINED_NAME
 import os
 
 device = "cpu"
@@ -12,14 +13,18 @@ access_token = os.environ.get("LS_ACCESS_TOKEN")
 
 
 class NewModel(LabelStudioMLBase):
-    def __init__(self, project_id, model="Salesforce/blip2-opt-2.7b", **kwargs):
+    def __init__(self, project_id, model=MODEL_NAME, **kwargs):
         super(NewModel, self).__init__(**kwargs)
         self.value = "captioning"
         self.hostname = "https://labelstudio.stablecog.com"
         self.model_name = model
         self.access_token = access_token
-        """ self.processor = AutoProcessor.from_pretrained(self.model_name)
-        self.model = Blip2ForConditionalGeneration.from_pretrained(self.model_name) """
+        self.processor = AutoProcessor.from_pretrained(
+            self.model_name, cache_dir=MODEL_CACHE_DIR
+        )
+        self.model = Blip2ForConditionalGeneration.from_pretrained(
+            self.model_name, cache_dir=MODEL_CACHE_DIR
+        )
 
     def _get_image_url(self, task):
         image_url_relative = task["data"].get(self.value) or task["data"].get(
