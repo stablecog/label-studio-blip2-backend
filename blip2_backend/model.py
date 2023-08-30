@@ -25,7 +25,7 @@ class NewModel(LabelStudioMLBase):
         for task in tasks:
             image_url = task["data"]["image"]
             image = Image.open(requests.get(image_url, stream=True).raw)
-            inputs = self.processor(image).to(device)
+            inputs = self.processor(image, return_tensors="pt").to(device)
             generated_ids = self.model.generate(**inputs, max_new_tokens=20)
             generated_text = self.processor.batch_decode(
                 generated_ids, skip_special_tokens=True
