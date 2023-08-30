@@ -91,9 +91,9 @@ class BLIP2Model(LabelStudioMLBase):
         for task in tasks:
             image = self._download_task_image(task)
             inputs = self.processor(image, return_tensors="pt").to(device)
-            generated_ids = self.model.generate(**inputs, max_new_tokens=75)
+            generated_ids = self.model.generate(**inputs, **model_settings)
             generated_text = self.processor.batch_decode(
-                generated_ids, **model_settings
+                generated_ids, skip_special_tokens=True
             )[0].strip()
             result = [
                 {
