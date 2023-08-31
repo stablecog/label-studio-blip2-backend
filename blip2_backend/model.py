@@ -18,6 +18,7 @@ label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
 azure_connection_string = os.environ.get("AZURE_CONNECTION_STRING")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch_float = torch.float16 if device == "cuda" else torch.float32
 processor_pre = None
 model_pre = None
 model_settings = {
@@ -37,7 +38,7 @@ def load_model():
     print(f"Loading model: {MODEL_NAME}")
     processor_pre = AutoProcessor.from_pretrained(MODEL_NAME, cache_dir=MODEL_CACHE_DIR)
     model_pre = Blip2ForConditionalGeneration.from_pretrained(
-        MODEL_NAME, cache_dir=MODEL_CACHE_DIR
+        MODEL_NAME, torch_dtype=torch_float, cache_dir=MODEL_CACHE_DIR
     )
     print(f"Loaded model in: {round(time.time() - s, 2)} seconds")
     s = time.time()
@@ -123,7 +124,7 @@ class BLIP2Model(LabelStudioMLBase):
         to_name = schema["to_name"][0]
         for task in tasks:
             image = self._download_task_image(task)
-            inputs = self.processor(image, return_tensors="pt").to(device)
+            inputs = self.processor(image, return_tensors="pt").to(device, torch_float)
             generated_ids = self.model.generate(**inputs, **model_settings)
             generated_text = self.processor.batch_decode(
                 generated_ids, skip_special_tokens=True
