@@ -11,12 +11,13 @@ import time
 from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
 from datetime import datetime, timedelta
 import urllib.parse
+import torch
 
 
 label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
 azure_connection_string = os.environ.get("AZURE_CONNECTION_STRING")
 
-device = "cpu"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 processor_pre = None
 model_pre = None
 model_settings = {
