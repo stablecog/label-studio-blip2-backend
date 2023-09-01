@@ -134,8 +134,8 @@ class BLIP2Model(LabelStudioMLBase):
                 generated_ids, skip_special_tokens=True
             )[0].strip()
             e = time.time()
-            print(f"🚀 Generated caption in: {round(e - s, 2)} seconds")
-            print(f"🖥️ Caption: {generated_text}")
+            print(f"🚀  Generated caption in: {round(e - s, 2)} seconds")
+            print(f"🖥️  Caption: {generated_text}")
             result = [
                 {
                     "type": "textarea",
