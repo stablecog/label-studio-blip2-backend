@@ -182,7 +182,7 @@ class BLIP2Model(LabelStudioMLBase):
 
         # store new data to the cache
         self.set("my_data", "my_new_data_value")
-        self.set("model_version", "my_new_model_version")
+        self.set("model_version", "model_v2")
         print(f'New data: {self.get("my_data")}')
         print(f'New model version: {self.get("model_version")}')
 
