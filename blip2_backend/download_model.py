@@ -1,6 +1,6 @@
 from transformers import AutoProcessor, Blip2ForConditionalGeneration
 
-MODEL_NAME = "Salesforce/blip2-opt-2.7b"
+MODEL_NAME = "Salesforce/blip2-opt-6.7b-coco"
 MODEL_CACHE_DIR = "huggingface_cache"
 
 
