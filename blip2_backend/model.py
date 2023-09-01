@@ -123,12 +123,15 @@ class BLIP2Model(LabelStudioMLBase):
         from_name, schema = list(self.parsed_label_config.items())[0]
         to_name = schema["to_name"][0]
         for task in tasks:
+            s = time.time()
             image = self._download_task_image(task)
             inputs = self.processor(image, return_tensors="pt").to(device, torch_float)
             generated_ids = self.model.generate(**inputs, **model_settings)
             generated_text = self.processor.batch_decode(
                 generated_ids, skip_special_tokens=True
             )[0].strip()
+            e = time.time()
+            print(f"🚀 Generated caption in: {round(e - s, 2)} seconds")
             result = [
                 {
                     "type": "textarea",
