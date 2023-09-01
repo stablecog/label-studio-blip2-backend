@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+model_version = "BLIP2 1.0"
 label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
 azure_connection_string = os.environ.get("AZURE_CONNECTION_STRING")
 
@@ -94,6 +95,7 @@ class BLIP2Model(LabelStudioMLBase):
         self.access_token = label_studio_access_token
         self.processor = processor_pre
         self.model = model_pre
+        self.model_version = model_version
 
     def _get_image_url(self, task):
         image_url = task["data"].get(self.value) or task["data"].get(
@@ -182,7 +184,7 @@ class BLIP2Model(LabelStudioMLBase):
 
         # store new data to the cache
         self.set("my_data", "my_new_data_value")
-        self.set("model_version", "model_v2")
+        self.set("model_version", "my_new_model_version")
         print(f'New data: {self.get("my_data")}')
         print(f'New model version: {self.get("model_version")}')
 
