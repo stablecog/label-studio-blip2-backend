@@ -25,7 +25,7 @@ torch_float = torch.float16 if device == "cuda" else torch.float32
 processor_pre = None
 model_pre = None
 model_settings = {
-    "max_length": 40,
+    "max_length": 30,
     "min_length": 10,
     "top_p": 0.9,
     "num_beams": 4,
