@@ -17,7 +17,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-model_version = "BLIP2 1.0"
 label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
 azure_connection_string = os.environ.get("AZURE_CONNECTION_STRING")
 
@@ -26,12 +25,12 @@ torch_float = torch.float16 if device == "cuda" else torch.float32
 processor_pre = None
 model_pre = None
 model_settings = {
-    "max_length": 50,
-    "min_length": 20,
+    "max_length": 40,
+    "min_length": 10,
     "top_p": 0.9,
     "num_beams": 4,
-    "repetition_penalty": 2.0,
-    "length_penalty": 2.0,
+    "repetition_penalty": 1.5,
+    "length_penalty": 1.5,
     "do_sample": False,
 }
 
@@ -183,7 +182,7 @@ class BLIP2Model(LabelStudioMLBase):
 
         # store new data to the cache
         self.set("my_data", "my_new_data_value")
-        self.set("model_version", model_version)
+        self.set("model_version", "my_new_model_version")
         print(f'New data: {self.get("my_data")}')
         print(f'New model version: {self.get("model_version")}')
 
