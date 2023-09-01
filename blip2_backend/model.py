@@ -12,6 +12,9 @@ from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_b
 from datetime import datetime, timedelta
 import urllib.parse
 import torch
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 label_studio_access_token = os.environ.get("LABEL_STUDIO_ACCESS_TOKEN")
